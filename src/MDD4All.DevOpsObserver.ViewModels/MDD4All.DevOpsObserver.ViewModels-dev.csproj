@@ -8,10 +8,13 @@
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\MDD4All.DevOpsObserver.DataProviders.Contracts\src\MDD4All.DevOpsObserver.DataProviders.Contracts\MDD4All.DevOpsObserver.DataProviders.Contracts-dev.csproj" />
+    <ProjectReference Include="..\..\..\MDD4All.DevOpsObserver.DataProviders.Integration\src\MDD4All.DevOpsObserver.DataProviders.Integration\MDD4All.DevOpsObserver.DataProviders.Integration-dev.csproj" />
+    <ProjectReference Include="..\..\..\MDD4All.DevOpsObserver.StatusCalculation\src\MDD4All.DevOpsObserver.StatusCalculation\MDD4All.DevOpsObserver.StatusCalculation-dev.csproj" />
   </ItemGroup>
 
 </Project>
