@@ -2,8 +2,11 @@
 using MDD4All.DevOpsObserver.DataModels;
 using MDD4All.DevOpsObserver.DataProviders.Integration;
 using MDD4All.DevOpsObserver.StatusCalculation;
+using MDD4All.DevOpsObserver.StatusLightControl.Contracts;
 using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Timers;
@@ -19,7 +22,6 @@ namespace MDD4All.DevOpsObserver.ViewModels
         private StatusCalculator _statusCalculator = new StatusCalculator();
 
         private IntegrationStatusProvider _integrationStatusProvider;
-        private Timer _timer;
 
         public MainViewModel(IConfiguration configuration, HttpClient httpClient,
                              DevOpsConfiguration devOpsConfiguration)
@@ -30,23 +32,37 @@ namespace MDD4All.DevOpsObserver.ViewModels
 
             _integrationStatusProvider = new IntegrationStatusProvider(configuration, httpClient);
 
-            _timer = new Timer(300000);
-            _timer.Elapsed += OnTimerElapsed;
-
-            Task.Run(() => RefreshStatusDataAsync()).Wait();
-
-            _timer.AutoReset = true;
-            //_timer.Enabled = true;
         }
 
-        private async Task RefreshStatusDataAsync()
+        public async Task RefreshStatusDataAsync()
         {
+            StatusAvailable = false;
+
             List<DevOpsStatusInformation> resultingStatus = new List<DevOpsStatusInformation>();
+
+            List<Task> tasks = new List<Task>();
 
             foreach (DevOpsSystem devOpsSystem in _devOpsConfiguration.Systems)
             {
-                List<DevOpsStatusInformation> status = await _integrationStatusProvider.GetDevOpsStatusListAsync(devOpsSystem);
-                resultingStatus.AddRange(status);
+                Task<List<DevOpsStatusInformation>> task = _integrationStatusProvider.GetDevOpsStatusListAsync(devOpsSystem);
+
+                tasks.Add(task);
+            }
+
+            await Task.WhenAll(tasks);
+
+            foreach (Task task in tasks)
+            {
+                if (task.IsCompleted)
+                {
+
+                    Task<List<DevOpsStatusInformation>> finishedTask = task as Task<List<DevOpsStatusInformation>>;
+                    if (finishedTask != null)
+                    {
+                        resultingStatus.AddRange(finishedTask.Result);
+                    }
+
+                }
             }
 
             StatusViewModels.Clear();
@@ -61,13 +77,12 @@ namespace MDD4All.DevOpsObserver.ViewModels
 
             _refreshingStatus = false;
 
-            OnPropertyChanged();
-        }
+            StatusAvailable = true;
 
-        private void OnTimerElapsed(object sender, ElapsedEventArgs e)
-        {
-            _refreshingStatus = true;
-            Task.Run(() => RefreshStatusDataAsync()).Wait();
+            //Debug.WriteLine("OAS " + OverallStatus.Status.Status);
+
+            OnPropertyChanged();
+
         }
 
         public List<StatusViewModel> StatusViewModels { get; set; } = new List<StatusViewModel>();
@@ -82,13 +97,15 @@ namespace MDD4All.DevOpsObserver.ViewModels
             }
         }
 
+        public bool StatusAvailable { get; set; } = false;
+
         public StatusViewModel OverallStatus
         {
             get
             {
                 List<DevOpsStatusInformation> devOpsStatusInformationList = new List<DevOpsStatusInformation>();
 
-                foreach(StatusViewModel statusViewModel in StatusViewModels)
+                foreach (StatusViewModel statusViewModel in StatusViewModels)
                 {
                     devOpsStatusInformationList.Add(statusViewModel.Status);
                 }
