@@ -42,7 +42,7 @@ namespace MDD4All.DevOpsObserver.ViewModels
                 {
                     result += "statusWarning";
                 }
-                else if (_statusInformation.Status == DevOpsStatus.Error)
+                else if (_statusInformation.StatusValue == DevOpsStatus.Error)
                 {
                     result += "statusError";
                 }
@@ -82,42 +82,61 @@ namespace MDD4All.DevOpsObserver.ViewModels
         {
             int result = 0;
 
-            if (Status.Status == DevOpsStatus.Unknown)
+            if (Status.StatusValue == DevOpsStatus.Unknown)
             {
-                if (other.Status.Status != DevOpsStatus.Unknown)
+                if (other.Status.StatusValue != DevOpsStatus.Unknown)
                 {
                     result = 1;
                 }
             }
-            else if (Status.Status == DevOpsStatus.Success)
+            else if (Status.StatusValue == DevOpsStatus.Success)
             {
-                if (other.Status.Status == DevOpsStatus.Error || other.Status.Status == DevOpsStatus.Fail)
+                if (other.Status.StatusValue == DevOpsStatus.Error || other.Status.StatusValue == DevOpsStatus.Fail)
                 {
                     result = 1;
-                }
-            }
-            else if (Status.Status == DevOpsStatus.Fail)
-            {
-                if (other.Status.Status == DevOpsStatus.Error)
-                {
-                    result = 1;
-                }
-                else
-                {
-                    result = 0;
-                }
-            }
-            else if (Status.Status == DevOpsStatus.Error)
-            {
-                if (other.Status.Status == DevOpsStatus.Error)
-                {
-                    result = 0;
                 }
                 else
                 {
                     result = -1;
                 }
             }
+            else if (Status.StatusValue == DevOpsStatus.Fail)
+            {
+                if (other.Status.StatusValue == DevOpsStatus.Error)
+                {
+                    result = 1;
+                }
+                else
+                {
+                    result = -1;
+                }
+            }
+            else if (Status.StatusValue == DevOpsStatus.Error)
+            {
+                if (other.Status.StatusValue == DevOpsStatus.Error)
+                {
+                    result = 1;
+                }
+                else
+                {
+                    result = -1;
+                }
+            }
+
+            return result;
+        }
+
+        public override string ToString()
+        {
+            string result = base.ToString();
+
+            if(Status.Alias != null)
+            {
+                result = Status.Alias.ToString();
+                result += " " + Status.StatusValue;
+            }
+
+            
 
             return result;
         }
