@@ -136,5 +136,53 @@ namespace MDD4All.DevOpsObserver.ViewModels
             }
         }
 
+        public int OnHour
+        {
+            get
+            {
+                int result = 7;
+                string onHourString = _configuration["HueStatusLight:OnHour"];
+
+                if (!string.IsNullOrEmpty(onHourString))
+                {
+                    int.TryParse(onHourString, out result);
+                }
+
+                return result;
+            }
+        }
+
+        public int OffHour
+        {
+            get
+            {
+                int result = 18;
+                string offHourString = _configuration["HueStatusLight:OffHour"];
+
+                if (!string.IsNullOrEmpty(offHourString))
+                {
+                    int.TryParse(offHourString, out result);
+                }
+
+                return result;
+            }
+        }
+
+        public bool TurnOffOnWeekend
+        {
+            get
+            {
+                bool result = true;
+
+                string turnOffString = _configuration["HueStatusLight:TurnOffOnWeekend"];
+                if (!string.IsNullOrEmpty(turnOffString))
+                {
+                    bool.TryParse(turnOffString, out result);
+                }
+
+                return result;
+            }
+        }
+
     }
 }
