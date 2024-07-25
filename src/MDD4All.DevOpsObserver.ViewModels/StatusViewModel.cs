@@ -22,7 +22,7 @@ namespace MDD4All.DevOpsObserver.ViewModels
         {
             get
             {
-                string result = "card ";
+                string result = "";
 
                 DevOpsStatus status = _statusCalculator.CalculateDisplayStatus(_statusInformation);
 

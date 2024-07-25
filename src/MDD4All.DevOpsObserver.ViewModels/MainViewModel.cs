@@ -5,6 +5,8 @@ using MDD4All.DevOpsObserver.StatusCalculation;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Timers;
@@ -23,6 +25,8 @@ namespace MDD4All.DevOpsObserver.ViewModels
 
         private Timer _timer;
 
+        private Timer _clockRefreshTimer;
+
         public MainViewModel(IConfiguration configuration, HttpClient httpClient,
                              DevOpsConfiguration devOpsConfiguration)
         {
@@ -38,7 +42,21 @@ namespace MDD4All.DevOpsObserver.ViewModels
             _timer.Interval = 300000; // 5 minutes
             _timer.Start();
 
+            _clockRefreshTimer = new Timer();
+            _clockRefreshTimer.Interval = 1000;
+            _clockRefreshTimer.AutoReset = true;
+            _clockRefreshTimer.Elapsed += OnClockTimerElapsed;
+            _clockRefreshTimer.Start();
+
             RefreshStatusDataAsync();
+        }
+
+        private void OnClockTimerElapsed(object sender, ElapsedEventArgs e)
+        {
+            if (DateTime.Now.Second == 0)
+            {
+                OnPropertyChanged();
+            }
         }
 
         private async void OnTimerElapsed(object sender, ElapsedEventArgs e)
@@ -184,5 +202,82 @@ namespace MDD4All.DevOpsObserver.ViewModels
             }
         }
 
+
+        public string CurrentTime
+        {
+            get
+            {
+                string result = DateTime.Now.ToString("HH:mm");
+
+                return result;
+            }
+        }
+
+        public int SuccessCount 
+        { 
+            get
+            {
+                int result = 0;
+
+                result = StatusViewModels.Count(item => item.Status.StatusValue == DevOpsStatus.Success);
+
+                return result;
+            }
+        }
+
+        public int WarningCount
+        {
+            get
+            {
+                int result = 0;
+
+                result = StatusViewModels.Count(item => item.Status.StatusValue == DevOpsStatus.Warning);
+
+                return result;
+            }
+        }
+
+        public int FailCount
+        {
+            get
+            {
+                int result = 0;
+
+                result = StatusViewModels.Count(item => item.Status.StatusValue == DevOpsStatus.Fail);
+
+                return result;
+            }
+        }
+
+        public int ErrorCount
+        {
+            get
+            {
+                int result = 0;
+
+                result = StatusViewModels.Count(item => item.Status.StatusValue == DevOpsStatus.Error);
+
+                return result;
+            }
+        }
+        public int UnknownCount
+        {
+            get
+            {
+                int result = 0;
+
+                result = StatusViewModels.Count(item => item.Status.StatusValue == DevOpsStatus.Unknown);
+
+                return result;
+            }
+        }
+
+        public string OrganizationTitle
+        {
+            get
+            {
+                return _devOpsConfiguration.OrganizationTitle;
+            }
+        }
     }
 }
